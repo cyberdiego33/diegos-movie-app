@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { API_BASE_URL, API_KEY, API_OPTIONS } from "./config";
 import Search from "./components/Search";
+import Spinner from "./components/spinner";
 
 const App = function () {
   const [searchTerm, setSearchTerm] = useState("Search movies");
-  const [errormessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [movieList, setMovieList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchMovies();
@@ -16,15 +19,26 @@ const App = function () {
       const endpoint = `${API_BASE_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS);
-      
-      if (!response.ok) throw new Error("network error");
+
+      if (!response.ok) {
+        setErrorMessage("Error fetching message; please try again");
+        throw new Error("network error");
+      }
 
       const data = await response.json();
 
-      alert("response successful");
+      if (!data.results) {
+        setErrorMessage("No results found");
+        setMovieList([]);
+        throw new Error("No results");
+      }
+      setMovieList(data.results || []);
+
+      // console.log(data.results);
     } catch (error) {
       console.log("Failed to fetch: ", error);
-      setErrorMessage("Error fetching message; please try again");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,7 +60,18 @@ const App = function () {
         <section className="all-movies">
           <h2 className="">All movies</h2>
 
-          {errormessage && <p className="text-red-500">{errormessage}</p>}
+          {isLoading ? (
+            <Spinner />
+          ) : errorMessage ? (
+            <p>{errorMessage}</p>
+          ) : (
+            <ul>
+              {movieList.map((movie) => (
+                <p key={movie.id} className="text-white">{movie.title}</p>
+              ))}
+              <p>successful movies</p>
+            </ul>
+          )}
         </section>
       </div>
     </main>
