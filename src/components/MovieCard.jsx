@@ -1,5 +1,6 @@
 import React from "react";
 
+// Movie card component 
 function MovieCard({
   movie: { title, vote_average, poster_path, original_language, release_date },
 }) {
